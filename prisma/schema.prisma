@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  sortOrder Int       @default(0)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id               Int       @id @default(autoincrement())
+  name             String
+  category         String
+  categoryId       Int?
+  price            Int
+  salePrice        Int?
+  msrp             Int?
+  onSale           Boolean   @default(false)
+  discountValue    Float?
+  description      String?
+  specs            String?
+  imageUrl         String?
+  deposit          Int       @default(0)
+  serialNumber     String?
+  sku              String?
+  // Orchid / firearm fields
+  upc              String?
+  manufacturer     String?
+  model            String?
+  partNumber       String?
+  caliber          String?
+  atfType          String?
+  cartridge        String?
+  action           String?
+  barrelLength     String?
+  overallLength    String?
+  magazineCapacity String?
+  magazineType     String?
+  condition        String?
+  quantityOnHand   Int?
+  reorderLevel     Int?
+  lastReceivedDate DateTime?
+  active           Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  categoryRef  Category?   @relation(fields: [categoryId], references: [id])
+  dealsQueue   DealQueue[]
+  reservations Reservation[]
+}
+
+model DisplaySettings {
+  id            Int      @id @default(autoincrement())
+  visibleFields Json     @default("[]")
+  updatedAt     DateTime @updatedAt
+}
+
+model DealQueue {
+  id          Int      @id @default(autoincrement())
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   Int
+  discountPct Int
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  history      DealHistory[]
+  reservations Reservation[]
+}
+
+model DealHistory {
+  id        Int       @id @default(autoincrement())
+  deal      DealQueue @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  dealId    Int
+  productId Int
+  ranOn     DateTime  @default(now()) @db.Date
+
+  @@unique([ranOn])
+}
+
+model Reservation {
+  id            Int        @id @default(autoincrement())
+  product       Product    @relation(fields: [productId], references: [id])
+  productId     Int
+  deal          DealQueue? @relation(fields: [dealId], references: [id])
+  dealId        Int?
+  customerName  String
+  customerEmail String
+  customerPhone String
+  amountPaid    Int
+  type          String
+  status        String     @default("pending")
+  expiresAt     DateTime?
+  createdAt     DateTime   @default(now())
+}
+
+model Setting {
+  key       String   @id
+  value     String?
+  updatedAt DateTime @updatedAt
+}

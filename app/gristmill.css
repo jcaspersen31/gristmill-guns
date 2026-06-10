@@ -1,0 +1,238 @@
+/* ═══════════════════════════════════════════════════════
+   GRISTMILL GUNS & OPTICS — Master Stylesheet
+   ═══════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap');
+
+/* ── TOKENS ─────────────────────────────────────────── */
+:root {
+  /* Brand */
+  --gold:           #c9a84c;
+  --gold-light:     #e8c84a;
+  --gold-dim:       rgba(201,168,76,0.15);
+
+  /* Backgrounds */
+  --bg:             #0a0a0a;
+  --bg-card:        #111111;
+  --bg-input:       #0a0a0a;
+  --bg-header:      #050505;
+
+  /* Borders */
+  --border:         #1e1e1e;
+  --border-mid:     #2a2a2a;
+  --border-hover:   rgba(201,168,76,0.5);
+
+  /* ── TEXT SCALE ──────────────────────────────────────
+     Minimum readable value: #9e9e9e
+     All text at or above this threshold.
+  ────────────────────────────────────────────────────── */
+  --text:           #e8e0d0;   /* primary content */
+  --text-mid:       #c0b8a8;   /* secondary content */
+  --text-muted:     #a8a098;   /* supporting text */
+  --text-dim:       #9e9e9e;   /* minimum — labels, hints, metadata */
+  --text-faint:     #9e9e9e;   /* same floor — tiny labels */
+
+  /* Status */
+  --red:            #7a1515;
+  --red-bright:     #c0392b;
+  --green:          #4caf50;
+  --blue:           #2196f3;
+
+  /* Typography */
+  --font-display:   'Oswald', sans-serif;
+  --font-body:      Georgia, serif;
+  --font-mono:      'Courier New', monospace;
+}
+
+/* ── RESET ───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── BASE ────────────────────────────────────────────── */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TYPOGRAPHY HELPERS ──────────────────────────────── */
+.gm-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.gm-heading {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.06em;
+}
+
+.gm-gold  { color: var(--gold); }
+.gm-muted { color: var(--text-muted); }
+.gm-dim   { color: var(--text-dim); }
+.gm-italic { font-style: italic; color: var(--text-muted); }
+
+/* ── CARDS ───────────────────────────────────────────── */
+.gm-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.gm-card:hover { border-color: var(--border-hover); }
+
+/* ── BUTTONS ─────────────────────────────────────────── */
+.gm-btn {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  padding: 9px 20px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  border: none;
+}
+.gm-btn-gold    { background: var(--gold); color: #000; }
+.gm-btn-gold:hover { opacity: 0.85; }
+.gm-btn-outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+.gm-btn-outline:hover { background: var(--gold); color: #000; }
+.gm-btn-ghost   { background: transparent; border: 1px solid var(--border-mid); color: var(--text-muted); }
+.gm-btn-danger  { background: transparent; border: 1px solid #330000; color: var(--red-bright); }
+
+/* ── INPUTS ──────────────────────────────────────────── */
+.gm-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-mid);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 2px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.gm-input:focus { border-color: var(--gold); }
+
+/* ── FOOTER ──────────────────────────────────────────── */
+.gm-footer {
+  background: var(--bg-header);
+  border-top: 1px solid var(--border-mid);
+  padding: 1.5rem 2rem;
+}
+.gm-footer-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 2;
+}
+.gm-footer-text a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.gm-footer-text a:hover { color: var(--text-mid); }
+.gm-footer-name {
+  color: var(--text-mid);
+  font-style: normal;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+}
+
+/* ── CATALOG ─────────────────────────────────────────── */
+.gm-product-category {
+  font-family: var(--font-display);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.gm-product-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.gm-product-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-style: italic;
+}
+.gm-price         { font-family: var(--font-display); font-size: 18px; color: var(--gold); font-weight: 700; }
+.gm-price-original { font-size: 11px; color: var(--text-dim); text-decoration: line-through; }
+
+/* ── ADMIN ───────────────────────────────────────────── */
+.gm-admin-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.gm-section-head {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+/* ── ADMIN SIDEBAR ───────────────────────────────────── */
+.gm-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.gm-sidebar-link:hover { color: var(--text-muted); background: rgba(201,168,76,0.05); }
+.gm-sidebar-link.active { color: var(--gold); background: rgba(201,168,76,0.08); border-left-color: var(--gold); }
+
+/* ── SCROLLBAR ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+/* ── ANIMATIONS ──────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* ── CLOUDINARY CONFIG ───────────────────────────────── 
+   Update these if Cloudinary credentials change.
+   Cloud name: dq2d56it9
+   Upload preset: gristmill
+   Folder: gristmill
+   Full upload URL: https://api.cloudinary.com/v1_1/dq2d56it9/image/upload
+────────────────────────────────────────────────────── */
