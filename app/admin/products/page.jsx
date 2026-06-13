@@ -42,7 +42,7 @@ export default function ProductsPage() {
       fetch("/api/categories").then(r => r.json()),
     ]).then(([data, cats]) => {
       setProducts(Array.isArray(data.products) ? data.products : []);
-      setCategories(Array.isArray(cats) ? cats : []);
+      setCategories(Array.isArray(cats.categories) ? cats.categories : Array.isArray(cats) ? cats : []);
       setLoading(false);
     });
   }, []);
