@@ -954,6 +954,10 @@ export default function GristmillClient() {
     fetch('/api/deals/today').then(r => r.json()).then(deal => {
       if (deal && !deal.error) setTodaysDeal({ ...deal, pct: deal.discountPct });
     });
+    // Check deal claimed status independently of product availability
+    fetch('/api/availability?ids=0').then(r => r.json()).then(a => {
+      setDealClaimedToday(a.dealClaimedToday || false);
+    });
     fetch('/api/categories').then(r => r.json()).then(d => {
       if (Array.isArray(d.categories)) setCategories(d.categories.map(c => c.name));
     });
