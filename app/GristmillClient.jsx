@@ -284,13 +284,13 @@ function DealResult({ product, pct, claimed: alreadyClaimed, onReserve, onPayFul
             <span style={{ fontSize:15, color:"var(--text-dim)", textDecoration:"line-through" }}>${product.price.toLocaleString()}</span>
           </div>
           <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:11, color:"#4caf50", letterSpacing:"0.1em", marginBottom:16 }}>TODAY ONLY — SAVE ${savings.toLocaleString()}</div>
-          {!claimed && !expired && (
+          {!claimed && !expired && !alreadyClaimed && (
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-              <button onClick={() => { setClaimed(true); onReserve(product, salePrice); }}
+              <button onClick={() => onReserve(product, salePrice)}
                 style={{ width:"100%", background:GOLD, color:"#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:14, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor:"pointer" }}>
                 RESERVE IT · ${product.deposit} DEPOSIT
               </button>
-              <button onClick={() => { setClaimed(true); onPayFull(product, salePrice); }}
+              <button onClick={() => onPayFull(product, salePrice)}
                 style={{ width:"100%", background:"transparent", color:"var(--text)", fontFamily:"'Oswald',sans-serif", fontSize:13, letterSpacing:"0.08em", padding:"10px 0", border:"1px solid #333", borderRadius:2, cursor:"pointer" }}>
                 PAY IN FULL · ${salePrice.toLocaleString()}
               </button>
