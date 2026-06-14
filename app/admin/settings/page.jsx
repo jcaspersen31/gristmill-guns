@@ -46,6 +46,13 @@ export default function SettingsPage() {
         </div>
 
         <div style={{ marginBottom:28 }}>
+          <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:13, color:"var(--text-muted)", letterSpacing:"0.12em", marginBottom:16, paddingBottom:8, borderBottom:"1px solid var(--border)" }}>KLAVIYO EMAIL MARKETING</div>
+          <InputField label="Klaviyo Private API Key" value={settings.klaviyo_api_key||""} onChange={v => set("klaviyo_api_key",v)} type="password" hint="Found in Klaviyo → Settings → API Keys. Use a Private Key."/>
+          <InputField label="Klaviyo List ID" value={settings.klaviyo_list_id||""} onChange={v => set("klaviyo_list_id",v)} placeholder="e.g. ABC123" hint="List to add customers to on reservation. Found in Klaviyo → Lists."/>
+          <InputField label="Klaviyo Company ID (Public)" value={settings.klaviyo_company_id||""} onChange={v => set("klaviyo_company_id",v)} placeholder="e.g. ABC123" hint="Found in Klaviyo → Settings → Account. Enables popup signup forms on the site."/>
+        </div>
+
+        <div style={{ marginBottom:28 }}>
           <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:13, color:"var(--text-muted)", letterSpacing:"0.12em", marginBottom:16, paddingBottom:8, borderBottom:"1px solid var(--border)" }}>ADMIN PASSWORD</div>
           <InputField label="New Password" value={settings.new_password||""} onChange={v => set("new_password",v)} type="password" placeholder="Leave blank to keep current"/>
           <InputField label="Confirm New Password" value={settings.confirm_password||""} onChange={v => set("confirm_password",v)} type="password"/>
