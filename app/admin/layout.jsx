@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: "/admin/categories",   label: "CATEGORIES",    icon: "📂" },
   { href: "/admin/display",      label: "DISPLAY",       icon: "👁" },
   { href: "/admin/content",      label: "SITE CONTENT",  icon: "✏️" },
+  { href: "/admin/blog",         label: "BLOG POSTS",    icon: "📝" },
   { href: "/admin/settings",     label: "SETTINGS",      icon: "⚙" },
 ];
 
