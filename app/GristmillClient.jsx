@@ -1229,6 +1229,11 @@ export default function GristmillClient() {
         </div>
       </footer>
 
+      {modal && <Modal {...modal} onClose={() => setModal(null)} onSuccess={() => {
+        if (modal.dealId) setDealClaimedToday(true);
+        if (modal.product?.id) setHeldProductIds(ids => [...ids, modal.product.id]);
+      }}/>}
+
     </div>
   );
 }
