@@ -944,6 +944,8 @@ export default function GristmillClient() {
   const [todaysDeal, setTodaysDeal] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [heldProductIds, setHeldProductIds] = useState([]);
+  const [dealClaimedToday, setDealClaimedToday] = useState(false);
   const LIMIT = 24;
 
   // Fetch today's deal once on mount
