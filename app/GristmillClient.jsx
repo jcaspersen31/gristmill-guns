@@ -232,7 +232,7 @@ function SpinnerWheel({ onResult, todaysDeal }) {
 }
 
 // ── deal result ───────────────────────────────────────────────────────────
-function DealResult({ product, pct, onReserve, onPayFull }) {
+function DealResult({ product, pct, claimed: alreadyClaimed, onReserve, onPayFull }) {
   const [endTime] = useState(() => getStoredEndTime() || Date.now() + 10 * 60 * 1000);
   const { rem, mins, secs, expired } = useCountdown(endTime);
   const [claimed, setClaimed] = useState(false);
@@ -256,6 +256,7 @@ function DealResult({ product, pct, onReserve, onPayFull }) {
         </div>
       )}
       {expired && !claimed && <div style={{ textAlign:"center", padding:"14px", marginBottom:20, background:"#1a0000", border:"1px solid #c0392b", borderRadius:3, fontFamily:"'Oswald',sans-serif", fontSize:13, color:"#c0392b", letterSpacing:"0.12em" }}>OFFER EXPIRED — CHECK BACK TOMORROW</div>}
+      {alreadyClaimed && !claimed && <div style={{ textAlign:"center", padding:"14px", marginBottom:20, background:"#1a1a00", border:`1px solid ${GOLD}44`, borderRadius:3, fontFamily:"'Oswald',sans-serif", fontSize:13, color:GOLD, letterSpacing:"0.12em" }}>TODAY'S DEAL HAS BEEN CLAIMED — CHECK BACK TOMORROW</div>}
       {claimed && <div style={{ textAlign:"center", padding:"18px", marginBottom:20, background:"#0d1a0d", border:"1px solid #2a5a2a", borderRadius:3 }}>
         <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:18, color:"#4caf50", letterSpacing:"0.1em" }}>✓ RESERVATION RECEIVED</div>
         <div style={{ color:"var(--text-dim)", fontSize:13, marginTop:5, fontStyle:"italic" }}>Come in within 48 hours to complete your purchase and paperwork.</div>
@@ -307,6 +308,7 @@ function Modal({ product, price, type, dealId, onClose }) {
   const [form, setForm] = useState({ name:"", email:"", phone:"" });
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [conflictError, setConflictError] = useState("");
   const set = (k,v) => setForm(f => ({ ...f, [k]:v }));
   const valid = form.name && form.email && form.phone;
 
@@ -329,6 +331,10 @@ function Modal({ product, price, type, dealId, onClose }) {
         }),
       });
       const reservation = await res.json();
+      if (res.status === 409) {
+        setConflictError(reservation.error || "This item is no longer available.");
+        return;
+      }
 
       // Fetch payment settings then redirect to FirstPay
       const setts = await fetch('/api/settings').then(r => r.json());
@@ -375,7 +381,8 @@ function Modal({ product, price, type, dealId, onClose }) {
             </div>
             {type==="deposit" && <div style={{ fontSize:10, color:"var(--text-dim)", marginTop:4, fontStyle:"italic" }}>Balance of ${(price - product.deposit).toLocaleString()} due in-store</div>}
           </div>
-          <button onClick={submit} disabled={!valid || submitting} style={{ width:"100%", background: valid && !submitting ? GOLD : "#9e9e9e", color: valid && !submitting ? "#000" : "#666", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor: valid && !submitting ? "pointer":"not-allowed" }}>
+          {conflictError && <div style={{ padding:"10px 14px", background:"#1a0000", border:"1px solid var(--red-bright)", borderRadius:2, color:"var(--red-bright)", fontSize:12, fontStyle:"italic", marginBottom:12 }}>{conflictError}</div>}
+          <button onClick={submit} disabled={!valid || submitting || !!conflictError} style={{ width:"100%", background: valid && !submitting ? GOLD : "#9e9e9e", color: valid && !submitting ? "#000" : "#666", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor: valid && !submitting ? "pointer":"not-allowed" }}>
             {submitting ? "SAVING..." : "PROCEED TO PAYMENT →"}
           </button>
         </> : (
@@ -424,6 +431,7 @@ function ProductCard({ p }) {
               <circle cx="46" cy="20" r="7" fill="none" stroke="#9e9e9e" strokeWidth="1.5"/>
             </svg>}
           {(p.sale||p.salePrice) && <span style={{ position:"absolute", top:7, right:7, background:"#7a1515", color:"#fff", fontSize:10, padding:"2px 7px", borderRadius:1, fontFamily:"'Oswald',sans-serif" }}>SALE</span>}
+          {held && <span style={{ position:"absolute", top:7, left:7, background:"#1a3a5a", color:"#7ab8e8", fontSize:10, padding:"2px 7px", borderRadius:1, fontFamily:"'Oswald',sans-serif" }}>ON HOLD</span>}
         </div>
         <div style={{ padding:"11px 13px 13px" }}>
           <div style={{ fontSize:9, color:"var(--text-dim)", letterSpacing:"0.18em", textTransform:"uppercase", marginBottom:3, fontFamily:"'Oswald',sans-serif" }}>{p.cat||p.category}</div>
@@ -433,8 +441,8 @@ function ProductCard({ p }) {
             <span style={{ fontFamily:"'Oswald',sans-serif", fontSize:18, color:GOLD, fontWeight:700 }}>${dp?.toLocaleString()}</span>
             {(p.sale||p.salePrice) && <span style={{ fontSize:11, color:"var(--text-dim)", textDecoration:"line-through" }}>${p.price?.toLocaleString()}</span>}
           </div>
-          <div style={{ width:"100%", background:"transparent", border:`1px solid ${GOLD}`, color:GOLD, fontFamily:"'Oswald',sans-serif", fontSize:11, padding:"6px 0", borderRadius:2, textAlign:"center", letterSpacing:"0.08em" }}>
-            VIEW DETAILS →
+          <div style={{ width:"100%", background: held ? "transparent":"transparent", border:`1px solid ${held ? "#1a3a5a" : GOLD}`, color: held ? "#7ab8e8":GOLD, fontFamily:"'Oswald',sans-serif", fontSize:11, padding:"6px 0", borderRadius:2, textAlign:"center", letterSpacing:"0.08em" }}>
+            {held ? "VIEW DETAILS (ON HOLD)" : "VIEW DETAILS →"}
           </div>
         </div>
       </div>
@@ -960,10 +968,21 @@ export default function GristmillClient() {
     fetch(`/api/products?${params}`)
       .then(r => r.json())
       .then(data => {
-        setProducts(Array.isArray(data.products) ? data.products : []);
+        const prods = Array.isArray(data.products) ? data.products : [];
+        setProducts(prods);
         setTotalPages(data.totalPages || 1);
         setTotal(data.total || 0);
         setLoading(false);
+        // Check availability for loaded products
+        if (prods.length) {
+          const ids = prods.map(p => p.id).join(',');
+          fetch(`/api/availability?ids=${ids}`)
+            .then(r => r.json())
+            .then(a => {
+              setHeldProductIds(a.heldProductIds || []);
+              setDealClaimedToday(a.dealClaimedToday || false);
+            });
+        }
 
       })
       .catch(() => setLoading(false));
@@ -1037,6 +1056,7 @@ export default function GristmillClient() {
             <DealResult
               product={dealProduct}
               pct={todaysDeal.pct}
+              claimed={dealClaimedToday}
               onReserve={(p, price) => setModal({ product:p, type:"deposit", price, dealId: todaysDeal?.id })}
               onPayFull={(p, price) => setModal({ product:p, type:"full", price, dealId: todaysDeal?.id })}
             />
@@ -1158,7 +1178,7 @@ export default function GristmillClient() {
           <div style={{ padding:"4rem 0", textAlign:"center", fontFamily:"'Oswald',sans-serif", fontSize:12, color:"var(--text-dim)", letterSpacing:"0.2em" }}>NO ITEMS FOUND</div>
         ) : (
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:"1rem" }}>
-            {normalized.map(p => <ProductCard key={p.id} p={p}/>)}
+            {normalized.map(p => <ProductCard key={p.id} p={p} held={heldProductIds.includes(p.id)}/>)}
           </div>
         )}
 

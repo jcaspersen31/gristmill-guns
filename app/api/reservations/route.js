@@ -5,7 +5,42 @@ import { prisma } from '@/lib/prisma'
 export async function POST(req) {
   try {
     const data = await req.json()
-    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000) // 48hr hold
+
+    // Check if product already has an active hold
+    const existingHold = await prisma.reservation.findFirst({
+      where: {
+        productId: Number(data.productId),
+        status: { in: ['pending', 'confirmed'] },
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } }
+        ]
+      }
+    })
+    if (existingHold) {
+      return NextResponse.json({ error: 'This item is already on hold' }, { status: 409 })
+    }
+
+    // For deal reservations, check if deal was already claimed today
+    if (data.dealId) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      const dealClaimed = await prisma.reservation.findFirst({
+        where: {
+          dealId: Number(data.dealId),
+          createdAt: { gte: today, lt: tomorrow },
+          status: { in: ['pending', 'confirmed'] }
+        }
+      })
+      if (dealClaimed) {
+        return NextResponse.json({ error: 'This deal has already been claimed today' }, { status: 409 })
+      }
+    }
+
+    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000)
     const reservation = await prisma.reservation.create({
       data: {
         productId:     Number(data.productId),

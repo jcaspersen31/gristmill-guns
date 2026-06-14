@@ -88,6 +88,7 @@ export default function ItemPage() {
   const [visibleFields, setVisibleFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
+  const [held, setHeld] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -97,6 +98,10 @@ export default function ItemPage() {
       setProduct(prod);
       setVisibleFields(Array.isArray(disp.visibleFields) ? disp.visibleFields : []);
       setLoading(false);
+      // Check availability
+      fetch(`/api/availability?ids=${id}`)
+        .then(r => r.json())
+        .then(a => setHeld((a.heldProductIds || []).includes(Number(id))));
     });
   }, [id]);
 
