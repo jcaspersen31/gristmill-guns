@@ -54,6 +54,10 @@ export default function ImportPage() {
     try {
       const data = await sendFile(file, false);
       if (data.error) { setError(data.error); return; }
+      if (data.created === 0 && data.updated === 0 && data.skipped === 0) {
+        setError('Import completed but no products were processed. Check that the file has valid data.');
+        return;
+      }
       setResult(data);
       setPreview(null);
       setFile(null);

@@ -93,6 +93,7 @@ function buildProductData(row) {
     reorderLevel:     parseQty(row['Reorder Level']),
     lastReceivedDate: parseDate(row['Last Received Date']),
     description:      [row['Manufacturer'], row['Model']].filter(Boolean).join(' ') || null,
+    deposit:          Math.round(retailPrice * 0.20), // 20% default deposit
   };
 }
 
@@ -111,7 +112,11 @@ export async function POST(req) {
       return NextResponse.json({ rows: previewData, total: rows.length });
     }
 
-    const results = { created: 0, updated: 0, skipped: 0, errors: [] };
+    const results = { created: 0, updated: 0, skipped: 0, errors: [], total: rows.length };
+
+    if (rows.length === 0) {
+      return NextResponse.json({ error: 'No valid rows found in file. Make sure the file has a Description and Retail Price column.' }, { status: 400 });
+    }
 
     // Auto-create any missing categories before import
     const uniqueCats = [...new Set(rows.map(r => mapCategory(r['Category'], r['Sub Category'])).filter(Boolean))];
@@ -146,6 +151,7 @@ export async function POST(req) {
           results.created++;
         }
       } catch (e) {
+        console.error('Import error on row:', row['Description'], e.message);
         results.errors.push({ row: String(row['Description'] || row['Part Number'] || ''), error: e.message });
       }
     }
