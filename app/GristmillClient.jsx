@@ -304,7 +304,7 @@ function DealResult({ product, pct, claimed: alreadyClaimed, onReserve, onPayFul
 }
 
 // ── reservation modal ─────────────────────────────────────────────────────
-function Modal({ product, price, type, dealId, onClose }) {
+function Modal({ product, price, type, dealId, onClose, onSuccess }) {
   const [form, setForm] = useState({ name:"", email:"", phone:"" });
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -335,6 +335,8 @@ function Modal({ product, price, type, dealId, onClose }) {
         setConflictError(reservation.error || "This item is no longer available.");
         return;
       }
+      // Notify parent of successful reservation
+      if (onSuccess) onSuccess();
 
       // Fetch payment settings then redirect to FirstPay
       const setts = await fetch('/api/settings').then(r => r.json());
@@ -954,8 +956,8 @@ export default function GristmillClient() {
     fetch('/api/deals/today').then(r => r.json()).then(deal => {
       if (deal && !deal.error) setTodaysDeal({ ...deal, pct: deal.discountPct });
     });
-    // Check deal claimed status independently of product availability
-    fetch('/api/availability?ids=0').then(r => r.json()).then(a => {
+    // Check deal claimed status independently
+    fetch('/api/availability?ids=').then(r => r.json()).then(a => {
       setDealClaimedToday(a.dealClaimedToday || false);
     });
     fetch('/api/categories').then(r => r.json()).then(d => {
