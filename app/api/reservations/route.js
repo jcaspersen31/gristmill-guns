@@ -2,6 +2,91 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+async function sendToKlaviyo(reservation, product) {
+  try {
+    const settings = await prisma.setting.findMany({
+      where: { key: { in: ['klaviyo_api_key', 'klaviyo_list_id'] } }
+    })
+    const settingsMap = Object.fromEntries(settings.map(s => [s.key, s.value]))
+    const apiKey = settingsMap['klaviyo_api_key']
+    const listId = settingsMap['klaviyo_list_id']
+
+    if (!apiKey) return // Not configured yet
+
+    const headers = {
+      'Authorization': `Klaviyo-API-Key ${apiKey}`,
+      'Content-Type': 'application/json',
+      'revision': '2024-02-15',
+    }
+
+    // 1. Create/update profile
+    const profileRes = await fetch('https://a.klaviyo.com/api/profiles/', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        data: {
+          type: 'profile',
+          attributes: {
+            email:        reservation.customerEmail,
+            phone_number: reservation.customerPhone,
+            first_name:   reservation.customerName.split(' ')[0],
+            last_name:    reservation.customerName.split(' ').slice(1).join(' ') || '',
+            properties: {
+              last_reservation_product: product?.name,
+              last_reservation_type:    reservation.type,
+              last_reservation_amount:  reservation.amountPaid,
+            }
+          }
+        }
+      })
+    })
+
+    // 2. Add to list if configured
+    if (listId) {
+      const profileData = await profileRes.json()
+      const profileId = profileData?.data?.id
+      if (profileId) {
+        await fetch(`https://a.klaviyo.com/api/lists/${listId}/relationships/profiles/`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            data: [{ type: 'profile', id: profileId }]
+          })
+        })
+      }
+    }
+
+    // 3. Track reservation event
+    await fetch('https://a.klaviyo.com/api/events/', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        data: {
+          type: 'event',
+          attributes: {
+            metric: { data: { type: 'metric', attributes: { name: 'Gun Reserved' } } },
+            profile: { data: { type: 'profile', attributes: { email: reservation.customerEmail } } },
+            properties: {
+              product_name:   product?.name,
+              product_id:     product?.id,
+              category:       product?.category,
+              caliber:        product?.caliber,
+              amount_paid:    reservation.amountPaid,
+              type:           reservation.type,
+              reservation_id: reservation.id,
+              expires_at:     reservation.expiresAt,
+            },
+            value: reservation.amountPaid,
+          }
+        }
+      })
+    })
+  } catch (e) {
+    // Klaviyo errors should never break the reservation flow
+    console.error('Klaviyo error:', e.message)
+  }
+}
+
 export async function POST(req) {
   try {
     const data = await req.json()
@@ -53,7 +138,12 @@ export async function POST(req) {
         status:        'pending',
         expiresAt,
       },
+      include: { product: true }
     })
+
+    // Send to Klaviyo async — don't await, don't block response
+    sendToKlaviyo(reservation, reservation.product)
+
     return NextResponse.json(reservation, { status: 201 })
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 })
