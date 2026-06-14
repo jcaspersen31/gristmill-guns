@@ -415,7 +415,7 @@ function Modal({ product, price, type, dealId, onClose }) {
 }
 
 // ── product card ──────────────────────────────────────────────────────────
-function ProductCard({ p }) {
+function ProductCard({ p, held }) {
   const [hov, setHov] = useState(false);
   const dp = p.salePrice ?? p.sale ?? p.price;
   return (
