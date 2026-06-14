@@ -5,7 +5,7 @@ import AdminButton from "@/components/admin/AdminButton";
 import InputField from "@/components/admin/InputField";
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState({ firstpay_merchant_id:"", firstpay_checkout_url:"", klaviyo_api_key:"", klaviyo_list_id:"", new_password:"", confirm_password:"" });
+  const [settings, setSettings] = useState({ firstpay_merchant_id:"", firstpay_checkout_url:"", klaviyo_api_key:"", klaviyo_list_id:"", klaviyo_company_id:"", new_password:"", confirm_password:"" });
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 

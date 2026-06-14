@@ -1,5 +1,7 @@
 import "./gristmill.css";
 import AgeGate from "./AgeGate";
+import { prisma } from "@/lib/prisma";
+import Script from "next/script";
 
 export const metadata = {
   title: "Gristmill Guns & Optics — Orangeville, PA",
@@ -11,9 +13,24 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  // Fetch Klaviyo company ID from settings
+  let klaviyoCompanyId = null;
+  try {
+    const row = await prisma.setting.findUnique({ where: { key: 'klaviyo_company_id' } });
+    if (row?.value) klaviyoCompanyId = row.value;
+  } catch {}
+
   return (
     <html lang="en">
+      <head>
+        {klaviyoCompanyId && (
+          <Script
+            src={`https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=${klaviyoCompanyId}`}
+            strategy="afterInteractive"
+          />
+        )}
+      </head>
       <body>
         <AgeGate>{children}</AgeGate>
       </body>
