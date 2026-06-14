@@ -220,12 +220,19 @@ export default function ItemPage() {
 
             {product.deposit > 0 && (
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                <button onClick={() => setModal({ type:"deposit", price:displayPrice })}
-                  style={{ background:GOLD, color:"#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"14px 0", border:"none", borderRadius:2, cursor:"pointer" }}>
-                  RESERVE IT · ${product.deposit} DEPOSIT
+                {held && (
+                  <div style={{ padding:"12px 16px", background:"#1a1a00", border:`1px solid ${GOLD}44`, borderRadius:2, fontFamily:"'Oswald',sans-serif", fontSize:12, color:GOLD, letterSpacing:"0.1em", textAlign:"center" }}>
+                    THIS ITEM IS CURRENTLY ON HOLD
+                  </div>
+                )}
+                <button onClick={() => !held && setModal({ type:"deposit", price:displayPrice })}
+                  disabled={held}
+                  style={{ background: held ? "#1a1a1a" : GOLD, color: held ? "var(--text-dim)" : "#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"14px 0", border:"none", borderRadius:2, cursor: held ? "not-allowed" : "pointer" }}>
+                  {held ? "CURRENTLY ON HOLD" : `RESERVE IT · $${product.deposit} DEPOSIT`}
                 </button>
-                <button onClick={() => setModal({ type:"full", price:displayPrice })}
-                  style={{ background:"transparent", color:"var(--text)", fontFamily:"'Oswald',sans-serif", fontSize:13, letterSpacing:"0.08em", padding:"12px 0", border:"1px solid #333", borderRadius:2, cursor:"pointer" }}>
+                <button onClick={() => !held && setModal({ type:"full", price:displayPrice })}
+                  disabled={held}
+                  style={{ background:"transparent", color: held ? "var(--text-dim)" : "var(--text)", fontFamily:"'Oswald',sans-serif", fontSize:13, letterSpacing:"0.08em", padding:"12px 0", border:"1px solid #333", borderRadius:2, cursor: held ? "not-allowed" : "pointer" }}>
                   PAY IN FULL · ${displayPrice?.toLocaleString()}
                 </button>
                 <div style={{ fontSize:10, color:"var(--text-dim)", textAlign:"center", fontStyle:"italic" }}>FFL paperwork completed in-store. Valid ID required.</div>
