@@ -949,6 +949,7 @@ export default function GristmillClient() {
   const [heldProductIds, setHeldProductIds] = useState([]);
   const [dealClaimedToday, setDealClaimedToday] = useState(false);
   const [modal, setModal] = useState(null);
+  const [siteContent, setSiteContent] = useState({});
   const LIMIT = 24;
 
   // Fetch today's deal once on mount
@@ -956,6 +957,9 @@ export default function GristmillClient() {
     if (getStoredSpin()) setSpinDone(true);
     fetch('/api/deals/today').then(r => r.json()).then(deal => {
       if (deal && !deal.error) setTodaysDeal({ ...deal, pct: deal.discountPct });
+    });
+    fetch('/api/content').then(r => r.json()).then(d => {
+      if (!d.error) setSiteContent(d);
     });
     // Check deal claimed status independently
     fetch('/api/availability?ids=').then(r => r.json()).then(a => {
@@ -1084,7 +1088,7 @@ export default function GristmillClient() {
             <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:32, fontWeight:700, color:"var(--text)", letterSpacing:"0.04em", marginBottom:10 }}>THE OLD GRISTMILL</div>
             <div style={{ width:48, height:2, background:GOLD, margin:"0 auto 16px" }}/>
             <div style={{ fontFamily:"Georgia,serif", fontStyle:"italic", color:"var(--text-dim)", fontSize:15, maxWidth:580, margin:"0 auto", lineHeight:1.8 }}>
-              Built in the 1800s along the banks of Fishing Creek, our building has been lovingly restored and decorated to honor its history. Come for the deals — stay for the experience.
+              {siteContent.about_tagline || 'Built in the 1800s along the banks of Fishing Creek, our building has been lovingly restored and decorated to honor its history. Come for the deals — stay for the experience.'}
             </div>
           </div>
 
@@ -1122,12 +1126,10 @@ export default function GristmillClient() {
 
           {/* Info cards row */}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))", gap:"1rem", marginBottom:"2.5rem" }}>
-            {[
-              { title:"Historic Structure", body:"Original hand-hewn timber framing, stone foundation walls, and wide-plank floors dating back over 150 years." },
-              { title:"Working Mill Artifacts", body:"Antique millstones, gears, and equipment preserved throughout the building — history you can touch." },
-              { title:"Rustic Décor", body:"Reclaimed wood, vintage signage, and curated antiques create an atmosphere unlike any other gun shop." },
-              { title:"Find Us", body:"1549 State Route 487, Orangeville PA 17859. Easy parking, right off the highway. Come say hello to Grant." },
-            ].map(({ title, body }) => (
+            {[1,2,3,4].map(n => ({
+              title: siteContent[`about_card_${n}_title`] || ['Historic Structure','Working Mill Artifacts','Rustic Décor','Find Us'][n-1],
+              body:  siteContent[`about_card_${n}_body`]  || ['Original hand-hewn timber framing, stone foundation walls, and wide-plank floors dating back over 150 years.','Antique millstones, gears, and equipment preserved throughout the building — history you can touch.','Reclaimed wood, vintage signage, and curated antiques create an atmosphere unlike any other gun shop.','1549 State Route 487, Orangeville PA 17859. Easy parking, right off the highway. Come say hello to Grant.'][n-1],
+            })).map(({ title, body }) => (
               <div key={title} style={{ background:"var(--bg-card)", border:"1px solid var(--border)", borderRadius:3, padding:"1.25rem" }}>
                 <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:13, color:GOLD, letterSpacing:"0.1em", marginBottom:6 }}>{title.toUpperCase()}</div>
                 <div style={{ fontSize:13, color:"var(--text-dim)", lineHeight:1.7, fontStyle:"italic" }}>{body}</div>

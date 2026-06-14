@@ -37,6 +37,32 @@ async function main() {
     });
   }
   console.log('Seeded settings');
+
+  // Seed default about/content
+  const defaultContent = [
+    { key: 'about_tagline',       value: 'Built in the 1800s along the banks of Fishing Creek, our building has been lovingly restored and decorated to honor its history. Come for the deals — stay for the experience.' },
+    { key: 'about_hero_img',      value: '' },
+    { key: 'about_img_interior',  value: '' },
+    { key: 'about_img_millstone', value: '' },
+    { key: 'about_img_decor',     value: '' },
+    { key: 'about_card_1_title',  value: 'Historic Structure' },
+    { key: 'about_card_1_body',   value: 'Original hand-hewn timber framing, stone foundation walls, and wide-plank floors dating back over 150 years.' },
+    { key: 'about_card_2_title',  value: 'Working Mill Artifacts' },
+    { key: 'about_card_2_body',   value: 'Antique millstones, gears, and equipment preserved throughout the building — history you can touch.' },
+    { key: 'about_card_3_title',  value: 'Rustic Décor' },
+    { key: 'about_card_3_body',   value: 'Reclaimed wood, vintage signage, and curated antiques create an atmosphere unlike any other gun shop.' },
+    { key: 'about_card_4_title',  value: 'Find Us' },
+    { key: 'about_card_4_body',   value: '1549 State Route 487, Orangeville PA 17859. Easy parking, right off the highway. Come say hello to Grant.' },
+    { key: 'shop_hours',          value: 'Mon-Fri: 10am-6pm | Sat: 9am-5pm | Sun: 11am-4pm' },
+  ];
+  for (const c of defaultContent) {
+    await prisma.content.upsert({
+      where: { key: c.key },
+      update: {},
+      create: c,
+    });
+  }
+  console.log('Seeded content');
 }
 
 main()
