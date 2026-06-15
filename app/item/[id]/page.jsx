@@ -222,13 +222,13 @@ export default function ItemPage() {
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                 {held && (
                   <div style={{ padding:"12px 16px", background:"#1a1a00", border:`1px solid ${GOLD}44`, borderRadius:2, fontFamily:"'Oswald',sans-serif", fontSize:12, color:GOLD, letterSpacing:"0.1em", textAlign:"center" }}>
-                    THIS ITEM IS CURRENTLY ON HOLD
+                    THIS ITEM IS CURRENTLY RESERVED
                   </div>
                 )}
                 <button onClick={() => !held && setModal({ type:"deposit", price:displayPrice })}
                   disabled={held}
                   style={{ background: held ? "#1a1a1a" : GOLD, color: held ? "var(--text-dim)" : "#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"14px 0", border:"none", borderRadius:2, cursor: held ? "not-allowed" : "pointer" }}>
-                  {held ? "CURRENTLY ON HOLD" : `RESERVE IT · $${product.deposit} DEPOSIT`}
+                  {held ? "CURRENTLY RESERVED" : `RESERVE IT · $${product.deposit} DEPOSIT`}
                 </button>
                 <button onClick={() => !held && setModal({ type:"full", price:displayPrice })}
                   disabled={held}

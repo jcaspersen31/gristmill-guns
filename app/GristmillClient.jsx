@@ -435,7 +435,7 @@ function ProductCard({ p, held }) {
           {(p.sale||p.salePrice) && <span style={{ position:"absolute", top:7, right:7, background:"#7a1515", color:"#fff", fontSize:10, padding:"2px 7px", borderRadius:1, fontFamily:"'Oswald',sans-serif" }}>
             {p.saleEndsAt ? `SALE ENDS ${new Date(p.saleEndsAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}` : 'SALE'}
           </span>}
-          {held && <span style={{ position:"absolute", top:7, left:7, background:"#1a3a5a", color:"#7ab8e8", fontSize:10, padding:"2px 7px", borderRadius:1, fontFamily:"'Oswald',sans-serif" }}>ON HOLD</span>}
+          {held && <span style={{ position:"absolute", top:7, left:7, background:"#1a3a5a", color:"#7ab8e8", fontSize:10, padding:"2px 7px", borderRadius:1, fontFamily:"'Oswald',sans-serif" }}>RESERVED</span>}
         </div>
         <div style={{ padding:"11px 13px 13px" }}>
           <div style={{ fontSize:9, color:"var(--text-dim)", letterSpacing:"0.18em", textTransform:"uppercase", marginBottom:3, fontFamily:"'Oswald',sans-serif" }}>{p.cat||p.category}</div>
@@ -446,7 +446,7 @@ function ProductCard({ p, held }) {
             {(p.sale||p.salePrice) && <span style={{ fontSize:11, color:"var(--text-dim)", textDecoration:"line-through" }}>${p.price?.toLocaleString()}</span>}
           </div>
           <div style={{ width:"100%", background: held ? "transparent":"transparent", border:`1px solid ${held ? "#1a3a5a" : GOLD}`, color: held ? "#7ab8e8":GOLD, fontFamily:"'Oswald',sans-serif", fontSize:11, padding:"6px 0", borderRadius:2, textAlign:"center", letterSpacing:"0.08em" }}>
-            {held ? "VIEW DETAILS (ON HOLD)" : "VIEW DETAILS →"}
+            {held ? "VIEW DETAILS (RESERVED)" : "VIEW DETAILS →"}
           </div>
         </div>
       </div>
@@ -1067,7 +1067,7 @@ export default function GristmillClient() {
           </div>
           {loading ? (
             <div style={{ padding:"4rem 0", fontFamily:"'Oswald',sans-serif", fontSize:13, color:"var(--text-dim)", letterSpacing:"0.2em" }}>LOADING TODAY'S DEAL...</div>
-          ) : !spinDone ? (
+          ) : !spinDone && !dealClaimedToday ? (
             <SpinnerWheel onResult={handleSpinResult} todaysDeal={todaysDeal}/>
           ) : dealProduct ? (
             <DealResult

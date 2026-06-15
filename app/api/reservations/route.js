@@ -103,7 +103,7 @@ export async function POST(req) {
       }
     })
     if (existingHold) {
-      return NextResponse.json({ error: 'This item is already on hold' }, { status: 409 })
+      return NextResponse.json({ error: 'This item has already been reserved' }, { status: 409 })
     }
 
     // For deal reservations, check if deal was already claimed today
