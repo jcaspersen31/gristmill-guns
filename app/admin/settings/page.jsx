@@ -41,8 +41,9 @@ export default function SettingsPage() {
 
         <div style={{ marginBottom:28 }}>
           <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:13, color:"var(--text-muted)", letterSpacing:"0.12em", marginBottom:16, paddingBottom:8, borderBottom:"1px solid var(--border)" }}>1STPAYGATEWAY</div>
-          <InputField label="Transcenter ID" value={settings.firstpay_transcenter_id||""} onChange={v => set("firstpay_transcenter_id",v)} hint="Your login ID — found in Security Settings → Gateway Options in your Transaction Center."/>
+          <InputField label="Transcenter ID" value={settings.firstpay_transcenter_id||""} onChange={v => set("firstpay_transcenter_id",v)} type="password" hint="Your login ID — found in Security Settings → Gateway Options."/>
           <InputField label="Gateway ID" value={settings.firstpay_gateway_id||""} onChange={v => set("firstpay_gateway_id",v)} type="password" hint="Found in Security Settings → Gateway Options. Keep this private."/>
+          <InputField label="Merchant Key" value={settings.firstpay_merchant_key||""} onChange={v => set("firstpay_merchant_key",v)} type="password" hint="Check your original 1stPayGateway signup email — it was shown once at account creation. Contact 1stPayGateway support if you can't locate it."/>
         </div>
 
         <div style={{ marginBottom:28 }}>
