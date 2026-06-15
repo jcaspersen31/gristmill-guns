@@ -5,7 +5,7 @@ import AdminButton from "@/components/admin/AdminButton";
 import InputField from "@/components/admin/InputField";
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState({ firstpay_merchant_id:"", firstpay_checkout_url:"", klaviyo_api_key:"", klaviyo_list_id:"", klaviyo_company_id:"", new_password:"", confirm_password:"" });
+  const [settings, setSettings] = useState({ firstpay_transcenter_id:"", firstpay_gateway_id:"", firstpay_merchant_id:"", firstpay_checkout_url:"", klaviyo_api_key:"", klaviyo_list_id:"", klaviyo_company_id:"", new_password:"", confirm_password:"" });
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -40,9 +40,9 @@ export default function SettingsPage() {
       {loading ? <div style={{ color:"var(--text-dim)", fontFamily:"'Oswald',sans-serif", letterSpacing:"0.15em" }}>LOADING...</div> : <>
 
         <div style={{ marginBottom:28 }}>
-          <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:13, color:"var(--text-muted)", letterSpacing:"0.12em", marginBottom:16, paddingBottom:8, borderBottom:"1px solid var(--border)" }}>PAYMENT</div>
-          <InputField label="FirstPay Merchant ID" value={settings.firstpay_merchant_id||""} onChange={v => set("firstpay_merchant_id",v)} type="password" hint="Stored securely. Never exposed in code or git."/>
-          <InputField label="FirstPay Checkout URL" value={settings.firstpay_checkout_url||""} onChange={v => set("firstpay_checkout_url",v)} placeholder="https://checkout.firstpay.com/pay/..." hint="Find this in your FirstPay dashboard under Payment Links."/>
+          <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:13, color:"var(--text-muted)", letterSpacing:"0.12em", marginBottom:16, paddingBottom:8, borderBottom:"1px solid var(--border)" }}>1STPAYGATEWAY</div>
+          <InputField label="Transcenter ID" value={settings.firstpay_transcenter_id||""} onChange={v => set("firstpay_transcenter_id",v)} hint="Your login ID — found in Security Settings → Gateway Options in your Transaction Center."/>
+          <InputField label="Gateway ID" value={settings.firstpay_gateway_id||""} onChange={v => set("firstpay_gateway_id",v)} type="password" hint="Found in Security Settings → Gateway Options. Keep this private."/>
         </div>
 
         <div style={{ marginBottom:28 }}>
