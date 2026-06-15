@@ -14,25 +14,38 @@ function Modal({ product, price, type, onClose }) {
   const [form, setForm] = useState({ name:"", email:"", phone:"" });
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [conflictError, setConflictError] = useState("");
   const set = (k,v) => setForm(f => ({ ...f, [k]:v }));
   const valid = form.name && form.email && form.phone;
 
   const submit = async () => {
     if (!valid || submitting) return;
     setSubmitting(true);
+    setConflictError("");
     try {
       const res = await fetch("/api/reservations", {
         method:"POST", headers:{"Content-Type":"application/json"},
         body:JSON.stringify({ productId:product.id, customerName:form.name, customerEmail:form.email, customerPhone:form.phone, amountPaid:type==="deposit"?product.deposit:price, type }),
       });
       const reservation = await res.json();
-      const setts = await fetch("/api/settings").then(r => r.json());
-      const checkoutUrl = setts?.firstpay_checkout_url;
-      if (checkoutUrl) {
-        const amount = type==="deposit" ? product.deposit : price;
-        const params = new URLSearchParams({ amount:amount.toFixed(2), order_id:String(reservation.id), description:`${type==="deposit"?"Deposit":"Payment"} - ${product.name}`, email:form.email, name:form.name });
-        window.location.href = `${checkoutUrl}?${params.toString()}`;
-      } else { setDone(true); }
+
+      if (res.status === 409) {
+        setConflictError(reservation.error || "This item has already been reserved.");
+        return;
+      }
+
+      // Try payment redirect
+      const amount = type==="deposit" ? product.deposit : price;
+      const paymentRes = await fetch("/api/payment", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ reservationId:reservation.id, amount, description:`${type==="deposit"?"Deposit":"Payment"} - ${product.name}`, email:form.email, name:form.name }),
+      });
+      const paymentData = await paymentRes.json();
+      if (paymentData.redirectUrl) {
+        window.location.href = paymentData.redirectUrl;
+        return;
+      }
+      setDone(true);
     } finally { setSubmitting(false); }
   };
 
@@ -56,7 +69,8 @@ function Modal({ product, price, type, onClose }) {
             </div>
             {type==="deposit" && <div style={{ fontSize:10, color:"var(--text-dim)", marginTop:4, fontStyle:"italic" }}>Balance of ${(price-product.deposit)?.toLocaleString()} due in-store</div>}
           </div>
-          <button onClick={submit} disabled={!valid||submitting} style={{ width:"100%", background:valid&&!submitting?GOLD:"#9e9e9e", color:valid&&!submitting?"#000":"#666", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor:valid&&!submitting?"pointer":"not-allowed" }}>
+          {conflictError && <div style={{ padding:"10px 14px", background:"#1a0000", border:"1px solid var(--red-bright)", borderRadius:2, color:"var(--red-bright)", fontSize:12, fontStyle:"italic", marginBottom:12 }}>{conflictError}</div>}
+          <button onClick={submit} disabled={!valid||submitting||!!conflictError} style={{ width:"100%", background:valid&&!submitting?GOLD:"#9e9e9e", color:valid&&!submitting?"#000":"#666", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor:valid&&!submitting?"pointer":"not-allowed" }}>
             {submitting?"SAVING...":"PROCEED TO PAYMENT →"}
           </button>
         </> : (

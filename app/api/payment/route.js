@@ -8,40 +8,47 @@ export async function POST(req) {
 
     // Get credentials from settings
     const rows = await prisma.setting.findMany({
-      where: { key: { in: ['firstpay_transcenter_id', 'firstpay_gateway_id'] } }
+      where: { key: { in: ['firstpay_transcenter_id', 'firstpay_gateway_id', 'firstpay_merchant_key', 'firstpay_checkout_url'] } }
     })
     const s = Object.fromEntries(rows.map(r => [r.key, r.value]))
-    const transcenterId = s['firstpay_transcenter_id']
-    const gatewayId = s['firstpay_gateway_id']
 
-    if (!transcenterId || !gatewayId) {
-      return NextResponse.json({ error: 'Payment not configured' }, { status: 503 })
+    // Option 1: Hosted checkout URL (simplest — just redirect with params)
+    if (s['firstpay_checkout_url']) {
+      const params = new URLSearchParams({
+        amount:      amount.toFixed(2),
+        order_id:    String(reservationId),
+        description,
+        email,
+        name,
+      })
+      return NextResponse.json({
+        redirectUrl: `${s['firstpay_checkout_url']}?${params.toString()}`
+      })
     }
 
-    // 1stPayGateway uses Authorize.Net compatible API
-    // Build the payment request
+    // Option 2: Web Payment Portal
+    const transcenterId = s['firstpay_transcenter_id']
+    const merchantKey = s['firstpay_merchant_key']
+
+    if (!transcenterId) {
+      return NextResponse.json({ configured: false })
+    }
+
+    // 1stPayGateway Web Payment Portal URL
+    // Customer fills in card details on their hosted page
+    const portalUrl = `https://secure.1stpaygateway.net/secure/paymentform/paymentform.aspx`
     const params = new URLSearchParams({
-      x_login:          transcenterId,
-      x_tran_key:       gatewayId,
-      x_version:        '3.1',
-      x_type:           'AUTH_CAPTURE',
-      x_method:         'CC',
-      x_amount:         amount.toFixed(2),
-      x_description:    description,
-      x_email:          email,
-      x_first_name:     name.split(' ')[0],
-      x_last_name:      name.split(' ').slice(1).join(' ') || '',
-      x_invoice_num:    String(reservationId),
-      x_relay_response: 'FALSE',
-      x_delim_data:     'TRUE',
-      x_delim_char:     '|',
+      TransCenterID: transcenterId,
+      Amount:        amount.toFixed(2),
+      OrderID:       String(reservationId),
+      Description:   description,
+      Email:         email,
+      Name:          name,
+      ...(merchantKey ? { MerchantKey: merchantKey } : {}),
     })
 
-    // Return the gateway URL and params for client-side form POST
-    // Card data goes directly to 1stPayGateway, never through our server
     return NextResponse.json({
-      gatewayUrl: 'https://secure.1stpaygateway.net/secure/gateway/aegateway.aspx',
-      params: Object.fromEntries(params),
+      redirectUrl: `${portalUrl}?${params.toString()}`
     })
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 })
