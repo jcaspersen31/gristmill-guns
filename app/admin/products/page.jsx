@@ -7,7 +7,7 @@ import InputField from "@/components/admin/InputField";
 const GOLD = "#c9a84c";
 
 const BLANK = {
-  name:"", category:"", price:"", salePrice:"", msrp:"",
+  name:"", category:"", price:"", salePrice:"", saleEndsAt:"", msrp:"",
   description:"", specs:"", imageUrl:"", deposit:"100",
   serialNumber:"", sku:"", upc:"", manufacturer:"", model:"",
   partNumber:"", caliber:"", atfType:"", cartridge:"", action:"",
@@ -55,6 +55,7 @@ export default function ProductsPage() {
       ...BLANK, ...p,
       price:            String(p.price ?? ""),
       salePrice:        p.salePrice ? String(p.salePrice) : "",
+      saleEndsAt:       p.saleEndsAt ? new Date(p.saleEndsAt).toISOString().split('T')[0] : "",
       msrp:             p.msrp ? String(p.msrp) : "",
       deposit:          String(p.deposit ?? 100),
       quantityOnHand:   p.quantityOnHand != null ? String(p.quantityOnHand) : "",
@@ -87,6 +88,7 @@ export default function ProductsPage() {
       ...form,
       price:            Number(form.price),
       salePrice:        form.salePrice ? Number(form.salePrice) : null,
+      saleEndsAt:       form.saleEndsAt || null,
       msrp:             form.msrp ? Number(form.msrp) : null,
       deposit:          Number(form.deposit) || 0,
       quantityOnHand:   form.quantityOnHand !== "" ? Number(form.quantityOnHand) : null,

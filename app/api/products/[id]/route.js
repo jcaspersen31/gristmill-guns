@@ -26,6 +26,7 @@ export async function PUT(req, { params }) {
         category:     data.category,
         price:        Number(data.price),
         salePrice:    data.salePrice ? Number(data.salePrice) : null,
+        saleEndsAt:   data.saleEndsAt ? new Date(data.saleEndsAt) : null,
         description:  data.description || null,
         specs:        data.specs || null,
         imageUrl:     data.imageUrl || null,

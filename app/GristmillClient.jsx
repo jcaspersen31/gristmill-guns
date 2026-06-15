@@ -432,7 +432,9 @@ function ProductCard({ p, held }) {
               <rect x="8" y="22" width="8" height="12" rx="1" fill="#222" stroke="#9e9e9e" strokeWidth="1"/>
               <circle cx="46" cy="20" r="7" fill="none" stroke="#9e9e9e" strokeWidth="1.5"/>
             </svg>}
-          {(p.sale||p.salePrice) && <span style={{ position:"absolute", top:7, right:7, background:"#7a1515", color:"#fff", fontSize:10, padding:"2px 7px", borderRadius:1, fontFamily:"'Oswald',sans-serif" }}>SALE</span>}
+          {(p.sale||p.salePrice) && <span style={{ position:"absolute", top:7, right:7, background:"#7a1515", color:"#fff", fontSize:10, padding:"2px 7px", borderRadius:1, fontFamily:"'Oswald',sans-serif" }}>
+            {p.saleEndsAt ? `SALE ENDS ${new Date(p.saleEndsAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}` : 'SALE'}
+          </span>}
           {held && <span style={{ position:"absolute", top:7, left:7, background:"#1a3a5a", color:"#7ab8e8", fontSize:10, padding:"2px 7px", borderRadius:1, fontFamily:"'Oswald',sans-serif" }}>ON HOLD</span>}
         </div>
         <div style={{ padding:"11px 13px 13px" }}>
@@ -946,6 +948,7 @@ export default function GristmillClient() {
   const [todaysDeal, setTodaysDeal] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [onSaleOnly, setOnSaleOnly] = useState(false);
   const [heldProductIds, setHeldProductIds] = useState([]);
   const [dealClaimedToday, setDealClaimedToday] = useState(false);
   const [modal, setModal] = useState(null);
@@ -978,6 +981,7 @@ export default function GristmillClient() {
     const params = new URLSearchParams({ page, limit: LIMIT });
     if (catFilter && catFilter !== "All") params.set("category", catFilter);
     if (search) params.set("search", search);
+    if (onSaleOnly) params.set("onSale", "true");
     fetch(`/api/products?${params}`)
       .then(r => r.json())
       .then(data => {
@@ -999,7 +1003,7 @@ export default function GristmillClient() {
 
       })
       .catch(() => setLoading(false));
-  }, [page, catFilter, search]);
+  }, [page, catFilter, search, onSaleOnly]);
 
   // Scroll after products render
   useEffect(() => {
@@ -1015,7 +1019,7 @@ export default function GristmillClient() {
     setSpinDone(true);
   };
 
-  const handleCatFilter = (cat) => { setCatFilter(cat); setPage(1); };
+  const handleCatFilter = (cat) => { setCatFilter(cat); setPage(1); setOnSaleOnly(false); };
   const handleSearch = (val) => { setSearch(val); setPage(1); };
 
   const normalizeProduct = (p) => ({
@@ -1171,6 +1175,10 @@ export default function GristmillClient() {
 
         {/* Category filters */}
         <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:"1.5rem" }}>
+          <button onClick={() => { setOnSaleOnly(v => !v); setPage(1); }}
+            style={{ background: onSaleOnly ? "rgba(139,21,21,0.2)":"transparent", border:`1px solid ${onSaleOnly ? "#c0392b":"var(--border)"}`, color: onSaleOnly ? "#c0392b":"var(--text-dim)", fontFamily:"'Oswald',sans-serif", fontSize:10, padding:"5px 12px", borderRadius:2, cursor:"pointer", letterSpacing:"0.12em", transition:"all 0.2s" }}>
+            ON SALE
+          </button>
           {["All", ...categories].map(c => (
             <button key={c} onClick={() => handleCatFilter(c)}
               style={{ background: catFilter===c ? `${GOLD}18`:"transparent", border:`1px solid ${catFilter===c ? GOLD:"#1e1e1e"}`, color: catFilter===c ? GOLD:"#a0a0a0", fontFamily:"'Oswald',sans-serif", fontSize:10, padding:"5px 12px", borderRadius:2, cursor:"pointer", letterSpacing:"0.12em", transition:"all 0.2s" }}>

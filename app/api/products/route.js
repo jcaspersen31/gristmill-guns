@@ -11,8 +11,19 @@ export async function GET(req) {
     const category = searchParams.get('category') || ''
     const search   = searchParams.get('search')   || ''
 
+    const onSaleOnly = searchParams.get('onSale') === 'true'
+    const now = new Date()
+
     const where = {
       active: true,
+      // Auto-expire sales where saleEndsAt has passed
+      ...(onSaleOnly ? {
+        salePrice: { not: null },
+        OR: [
+          { saleEndsAt: null },
+          { saleEndsAt: { gt: now } }
+        ]
+      } : {}),
       ...(category && category !== 'All' ? { category } : {}),
       ...(search ? {
         OR: [
