@@ -70,6 +70,15 @@ model Content {
   updatedAt DateTime @updatedAt
 }
 
+model MagicLink {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
 model Post {
   id          Int      @id @default(autoincrement())
   title       String

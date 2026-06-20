@@ -5,7 +5,7 @@ import AdminButton from "@/components/admin/AdminButton";
 import InputField from "@/components/admin/InputField";
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState({ firstpay_transcenter_id:"", firstpay_gateway_id:"", firstpay_merchant_id:"", firstpay_checkout_url:"", klaviyo_api_key:"", klaviyo_list_id:"", klaviyo_company_id:"", new_password:"", confirm_password:"" });
+  const [settings, setSettings] = useState({ firstpay_transcenter_id:"", firstpay_gateway_id:"", firstpay_merchant_id:"", firstpay_checkout_url:"", klaviyo_api_key:"", klaviyo_list_id:"", klaviyo_company_id:"", resend_api_key:"", new_password:"", confirm_password:"" });
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -51,6 +51,11 @@ export default function SettingsPage() {
           <InputField label="Klaviyo Private API Key" value={settings.klaviyo_api_key||""} onChange={v => set("klaviyo_api_key",v)} type="password" hint="Found in Klaviyo → Settings → API Keys. Use a Private Key."/>
           <InputField label="Klaviyo List ID" value={settings.klaviyo_list_id||""} onChange={v => set("klaviyo_list_id",v)} placeholder="e.g. ABC123" hint="List to add customers to on reservation. Found in Klaviyo → Lists."/>
           <InputField label="Klaviyo Company ID (Public)" value={settings.klaviyo_company_id||""} onChange={v => set("klaviyo_company_id",v)} placeholder="e.g. ABC123" hint="Found in Klaviyo → Settings → Account. Enables popup signup forms on the site."/>
+        </div>
+
+        <div style={{ marginBottom:28 }}>
+          <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:13, color:"var(--text-muted)", letterSpacing:"0.12em", marginBottom:16, paddingBottom:8, borderBottom:"1px solid var(--border)" }}>EMAIL (RESEND)</div>
+          <InputField label="Resend API Key" value={settings.resend_api_key||""} onChange={v => set("resend_api_key",v)} type="password" hint="From resend.com → API Keys. Powers reservation confirmations and customer login links."/>
         </div>
 
         <div style={{ marginBottom:28 }}>
