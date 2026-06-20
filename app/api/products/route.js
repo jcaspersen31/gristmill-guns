@@ -20,6 +20,7 @@ export async function GET(req) {
       newest:      { createdAt: 'desc' },
     }
     const orderBy = sortMap[sort] || sortMap.name_asc
+    const onSaleOnly = searchParams.get('onSale') === 'true'
     const now = new Date()
 
     const where = {
