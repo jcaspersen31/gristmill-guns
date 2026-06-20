@@ -1054,7 +1054,17 @@ export default function GristmillClient() {
             <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:22, fontWeight:700, color:"var(--text)", letterSpacing:"0.1em", lineHeight:1 }}>GRISTMILL</div>
             <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:10, color:GOLD, letterSpacing:"0.24em" }}>GUNS & OPTICS</div>
           </div>
-          <div style={{ marginLeft:"auto", fontFamily:"'Oswald',sans-serif", fontSize:11, color:"var(--text-dim)", letterSpacing:"0.1em" }}>(570) 713-7339 &nbsp;·&nbsp; 1549 PA-487, Orangeville PA</div>
+          <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:20 }}>
+            <a href="/blog" style={{ fontFamily:"'Oswald',sans-serif", fontSize:11, color:"var(--text-dim)", letterSpacing:"0.1em", textDecoration:"none", transition:"color 0.2s" }}
+              onMouseEnter={e=>e.currentTarget.style.color=GOLD} onMouseLeave={e=>e.currentTarget.style.color="var(--text-dim)"}>
+              NEWS
+            </a>
+            <a href="/my-reservations" style={{ fontFamily:"'Oswald',sans-serif", fontSize:11, color:"var(--text-dim)", letterSpacing:"0.1em", textDecoration:"none", transition:"color 0.2s" }}
+              onMouseEnter={e=>e.currentTarget.style.color=GOLD} onMouseLeave={e=>e.currentTarget.style.color="var(--text-dim)"}>
+              MY RESERVATIONS
+            </a>
+            <span style={{ fontFamily:"'Oswald',sans-serif", fontSize:11, color:"var(--text-dim)", letterSpacing:"0.1em" }}>(570) 713-7339</span>
+          </div>
         </div>
       </header>
 
