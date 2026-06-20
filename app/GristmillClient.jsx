@@ -949,6 +949,7 @@ export default function GristmillClient() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [onSaleOnly, setOnSaleOnly] = useState(false);
+  const [sort, setSort] = useState("name_asc");
   const [heldProductIds, setHeldProductIds] = useState([]);
   const [dealClaimedToday, setDealClaimedToday] = useState(false);
   const [modal, setModal] = useState(null);
@@ -982,6 +983,7 @@ export default function GristmillClient() {
     if (catFilter && catFilter !== "All") params.set("category", catFilter);
     if (search) params.set("search", search);
     if (onSaleOnly) params.set("onSale", "true");
+    params.set("sort", sort);
     fetch(`/api/products?${params}`)
       .then(r => r.json())
       .then(data => {
@@ -1003,7 +1005,7 @@ export default function GristmillClient() {
 
       })
       .catch(() => setLoading(false));
-  }, [page, catFilter, search, onSaleOnly]);
+  }, [page, catFilter, search, onSaleOnly, sort]);
 
   // Scroll after products render
   useEffect(() => {
@@ -1164,13 +1166,23 @@ export default function GristmillClient() {
             <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:26, fontWeight:700, color:"var(--text)", letterSpacing:"0.04em" }}>IN-STORE CATALOG</div>
           </div>
           {/* Search */}
-          <input
-            type="text"
-            value={search}
-            onChange={e => handleSearch(e.target.value)}
-            placeholder="Search by name, caliber, make..."
-            style={{ background:"var(--bg-card)", border:"1px solid var(--border-mid)", color:"var(--text)", padding:"8px 14px", borderRadius:2, fontFamily:"Georgia,serif", fontSize:13, outline:"none", width:240 }}
-          />
+          <div style={{ display:"flex", gap:8 }}>
+            <input
+              type="text"
+              value={search}
+              onChange={e => handleSearch(e.target.value)}
+              placeholder="Search by name, caliber, make..."
+              style={{ background:"var(--bg-card)", border:"1px solid var(--border-mid)", color:"var(--text)", padding:"8px 14px", borderRadius:2, fontFamily:"Georgia,serif", fontSize:13, outline:"none", width:220 }}
+            />
+            <select value={sort} onChange={e => { setSort(e.target.value); setPage(1); }}
+              style={{ background:"var(--bg-card)", border:"1px solid var(--border-mid)", color:"var(--text)", padding:"8px 12px", borderRadius:2, fontFamily:"'Oswald',sans-serif", fontSize:11, outline:"none", letterSpacing:"0.06em", cursor:"pointer" }}>
+              <option value="name_asc">NAME (A–Z)</option>
+              <option value="name_desc">NAME (Z–A)</option>
+              <option value="price_asc">PRICE: LOW TO HIGH</option>
+              <option value="price_desc">PRICE: HIGH TO LOW</option>
+              <option value="newest">NEWEST FIRST</option>
+            </select>
+          </div>
         </div>
 
         {/* Category filters */}

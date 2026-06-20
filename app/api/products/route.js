@@ -11,7 +11,15 @@ export async function GET(req) {
     const category = searchParams.get('category') || ''
     const search   = searchParams.get('search')   || ''
 
-    const onSaleOnly = searchParams.get('onSale') === 'true'
+    const sort = searchParams.get('sort') || 'name_asc'
+    const sortMap = {
+      name_asc:    { name: 'asc' },
+      name_desc:   { name: 'desc' },
+      price_asc:   { price: 'asc' },
+      price_desc:  { price: 'desc' },
+      newest:      { createdAt: 'desc' },
+    }
+    const orderBy = sortMap[sort] || sortMap.name_asc
     const now = new Date()
 
     const where = {
@@ -41,7 +49,7 @@ export async function GET(req) {
       prisma.product.count({ where }),
       prisma.product.findMany({
         where,
-        orderBy: { name: 'asc' },
+        orderBy,
         skip:  (page - 1) * limit,
         take:  limit,
       }),
