@@ -10,7 +10,7 @@ function Logo({ size=36 }) {
   return <img src="https://res.cloudinary.com/dq2d56it9/image/upload/v1781047650/Gristmill_Logo_dqmsgw.png" alt="Gristmill Guns & Optics" width={size} height={size} style={{ objectFit:"contain" }}/>
 }
 
-function Modal({ product, price, type, onClose }) {
+function Modal({ product, price, type, onClose, paymentMode }) {
   const [form, setForm] = useState({ name:"", email:"", phone:"" });
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -54,24 +54,28 @@ function Modal({ product, price, type, onClose }) {
       <div style={{ background:"var(--bg-card)", border:`1px solid ${GOLD}`, borderRadius:3, padding:"2rem", width:"100%", maxWidth:400, position:"relative" }}>
         <button onClick={onClose} style={{ position:"absolute", top:10, right:14, background:"none", border:"none", color:"var(--text-dim)", fontSize:22, cursor:"pointer" }}>×</button>
         {!done ? <>
-          <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:18, color:GOLD, letterSpacing:"0.1em", marginBottom:3 }}>{type==="deposit"?"RESERVE THIS ITEM":"PAY IN FULL"}</div>
-          <div style={{ fontStyle:"italic", color:"var(--text-dim)", fontSize:12, marginBottom:18 }}>{product.name} · ${price?.toLocaleString()}</div>
+          <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:18, color:GOLD, letterSpacing:"0.1em", marginBottom:3 }}>
+            {paymentMode === "email_only" ? "RESERVE THIS ITEM" : (type==="deposit"?"RESERVE THIS ITEM":"PAY IN FULL")}
+          </div>
+          <div style={{ fontStyle:"italic", color:"var(--text-dim)", fontSize:12, marginBottom:18 }}>{product.name}{paymentMode !== "email_only" && ` · $${price?.toLocaleString()}`}</div>
           {[["Full Name","name","text"],["Email Address","email","email"],["Phone Number","phone","tel"]].map(([label,key,t]) => (
             <div key={key} style={{ marginBottom:12 }}>
               <label style={{ display:"block", fontSize:10, color:"var(--text-dim)", fontFamily:"'Oswald',sans-serif", letterSpacing:"0.12em", marginBottom:4 }}>{label.toUpperCase()}</label>
               <input type={t} value={form[key]} onChange={e => set(key,e.target.value)} style={{ width:"100%", background:"var(--bg)", border:"1px solid var(--border-mid)", color:"var(--text)", padding:"8px 12px", borderRadius:2, fontFamily:"Georgia,serif", fontSize:13, outline:"none", boxSizing:"border-box" }}/>
             </div>
           ))}
-          <div style={{ padding:"12px 14px", background:"var(--bg)", border:"1px solid var(--border)", borderRadius:2, marginBottom:16 }}>
-            <div style={{ display:"flex", justifyContent:"space-between" }}>
-              <span style={{ fontSize:12, color:"var(--text-dim)", fontFamily:"'Oswald',sans-serif" }}>{type==="deposit"?"DEPOSIT":"TOTAL"} DUE NOW</span>
-              <span style={{ fontSize:16, color:GOLD, fontFamily:"'Oswald',sans-serif", fontWeight:700 }}>${(type==="deposit"?product.deposit:price)?.toLocaleString()}</span>
+          {paymentMode !== "email_only" && (
+            <div style={{ padding:"12px 14px", background:"var(--bg)", border:"1px solid var(--border)", borderRadius:2, marginBottom:16 }}>
+              <div style={{ display:"flex", justifyContent:"space-between" }}>
+                <span style={{ fontSize:12, color:"var(--text-dim)", fontFamily:"'Oswald',sans-serif" }}>{type==="deposit"?"DEPOSIT":"TOTAL"} DUE NOW</span>
+                <span style={{ fontSize:16, color:GOLD, fontFamily:"'Oswald',sans-serif", fontWeight:700 }}>${(type==="deposit"?product.deposit:price)?.toLocaleString()}</span>
+              </div>
+              {type==="deposit" && <div style={{ fontSize:10, color:"var(--text-dim)", marginTop:4, fontStyle:"italic" }}>Balance of ${(price-product.deposit)?.toLocaleString()} due in-store</div>}
             </div>
-            {type==="deposit" && <div style={{ fontSize:10, color:"var(--text-dim)", marginTop:4, fontStyle:"italic" }}>Balance of ${(price-product.deposit)?.toLocaleString()} due in-store</div>}
-          </div>
+          )}
           {conflictError && <div style={{ padding:"10px 14px", background:"#1a0000", border:"1px solid var(--red-bright)", borderRadius:2, color:"var(--red-bright)", fontSize:12, fontStyle:"italic", marginBottom:12 }}>{conflictError}</div>}
           <button onClick={submit} disabled={!valid||submitting||!!conflictError} style={{ width:"100%", background:valid&&!submitting?GOLD:"#9e9e9e", color:valid&&!submitting?"#000":"#666", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor:valid&&!submitting?"pointer":"not-allowed" }}>
-            {submitting?"SAVING...":"PROCEED TO PAYMENT →"}
+            {submitting?"SAVING...":(paymentMode==="email_only"?"CONFIRM RESERVATION →":"PROCEED TO PAYMENT →")}
           </button>
         </> : (
           <div style={{ textAlign:"center", padding:"1rem 0" }}>
@@ -103,6 +107,7 @@ export default function ItemPage() {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [held, setHeld] = useState(false);
+  const [paymentMode, setPaymentMode] = useState("email_only");
 
   useEffect(() => {
     Promise.all([
@@ -116,6 +121,10 @@ export default function ItemPage() {
       fetch(`/api/availability?ids=${id}`)
         .then(r => r.json())
         .then(a => setHeld((a.heldProductIds || []).includes(Number(id))));
+      // Check payment mode
+      fetch('/api/settings').then(r => r.json()).then(s => {
+        if (s.payment_mode) setPaymentMode(s.payment_mode);
+      });
     });
   }, [id]);
 
@@ -239,17 +248,29 @@ export default function ItemPage() {
                     THIS ITEM IS CURRENTLY RESERVED
                   </div>
                 )}
-                <button onClick={() => !held && setModal({ type:"deposit", price:displayPrice })}
-                  disabled={held}
-                  style={{ background: held ? "#1a1a1a" : GOLD, color: held ? "var(--text-dim)" : "#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"14px 0", border:"none", borderRadius:2, cursor: held ? "not-allowed" : "pointer" }}>
-                  {held ? "CURRENTLY RESERVED" : `RESERVE IT · $${product.deposit} DEPOSIT`}
-                </button>
-                <button onClick={() => !held && setModal({ type:"full", price:displayPrice })}
-                  disabled={held}
-                  style={{ background:"transparent", color: held ? "var(--text-dim)" : "var(--text)", fontFamily:"'Oswald',sans-serif", fontSize:13, letterSpacing:"0.08em", padding:"12px 0", border:"1px solid #333", borderRadius:2, cursor: held ? "not-allowed" : "pointer" }}>
-                  PAY IN FULL · ${displayPrice?.toLocaleString()}
-                </button>
-                <div style={{ fontSize:10, color:"var(--text-dim)", textAlign:"center", fontStyle:"italic" }}>FFL paperwork completed in-store. Valid ID required.</div>
+                {paymentMode === "email_only" ? (
+                  <button onClick={() => !held && setModal({ type:"deposit", price:displayPrice })}
+                    disabled={held}
+                    style={{ background: held ? "#1a1a1a" : GOLD, color: held ? "var(--text-dim)" : "#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"14px 0", border:"none", borderRadius:2, cursor: held ? "not-allowed" : "pointer" }}>
+                    {held ? "CURRENTLY RESERVED" : "RESERVE THIS ITEM"}
+                  </button>
+                ) : (
+                  <>
+                    <button onClick={() => !held && setModal({ type:"deposit", price:displayPrice })}
+                      disabled={held}
+                      style={{ background: held ? "#1a1a1a" : GOLD, color: held ? "var(--text-dim)" : "#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"14px 0", border:"none", borderRadius:2, cursor: held ? "not-allowed" : "pointer" }}>
+                      {held ? "CURRENTLY RESERVED" : `RESERVE IT · $${product.deposit} DEPOSIT`}
+                    </button>
+                    <button onClick={() => !held && setModal({ type:"full", price:displayPrice })}
+                      disabled={held}
+                      style={{ background:"transparent", color: held ? "var(--text-dim)" : "var(--text)", fontFamily:"'Oswald',sans-serif", fontSize:13, letterSpacing:"0.08em", padding:"12px 0", border:"1px solid #333", borderRadius:2, cursor: held ? "not-allowed" : "pointer" }}>
+                      PAY IN FULL · ${displayPrice?.toLocaleString()}
+                    </button>
+                  </>
+                )}
+                <div style={{ fontSize:10, color:"var(--text-dim)", textAlign:"center", fontStyle:"italic" }}>
+                  {paymentMode === "email_only" ? "Come in or call to complete payment. Valid ID required." : "FFL paperwork completed in-store. Valid ID required."}
+                </div>
               </div>
             )}
           </div>
@@ -262,7 +283,7 @@ export default function ItemPage() {
         </div>
       </footer>
 
-      {modal && <Modal product={product} price={modal.price} type={modal.type} onClose={() => setModal(null)}/>}
+      {modal && <Modal product={product} price={modal.price} type={modal.type} paymentMode={paymentMode} onClose={() => setModal(null)}/>}
     </div>
   );
 }

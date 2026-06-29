@@ -232,7 +232,7 @@ function SpinnerWheel({ onResult, todaysDeal }) {
 }
 
 // ── deal result ───────────────────────────────────────────────────────────
-function DealResult({ product, pct, claimed: alreadyClaimed, onReserve, onPayFull }) {
+function DealResult({ product, pct, claimed: alreadyClaimed, onReserve, onPayFull, paymentMode }) {
   const [endTime] = useState(() => getStoredEndTime() || Date.now() + 10 * 60 * 1000);
   const { rem, mins, secs, expired } = useCountdown(endTime);
   const [claimed, setClaimed] = useState(false);
@@ -286,15 +286,26 @@ function DealResult({ product, pct, claimed: alreadyClaimed, onReserve, onPayFul
           <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:11, color:"#4caf50", letterSpacing:"0.1em", marginBottom:16 }}>TODAY ONLY — SAVE ${savings.toLocaleString()}</div>
           {!claimed && !expired && !alreadyClaimed && (
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-              <button onClick={() => onReserve(product, salePrice)}
-                style={{ width:"100%", background:GOLD, color:"#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:14, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor:"pointer" }}>
-                RESERVE IT · ${product.deposit} DEPOSIT
-              </button>
-              <button onClick={() => onPayFull(product, salePrice)}
-                style={{ width:"100%", background:"transparent", color:"var(--text)", fontFamily:"'Oswald',sans-serif", fontSize:13, letterSpacing:"0.08em", padding:"10px 0", border:"1px solid #333", borderRadius:2, cursor:"pointer" }}>
-                PAY IN FULL · ${salePrice.toLocaleString()}
-              </button>
-              <div style={{ fontSize:10, color:"var(--text-dim)", textAlign:"center", fontStyle:"italic" }}>FFL paperwork completed in-store. Valid ID required.</div>
+              {paymentMode === "email_only" ? (
+                <button onClick={() => onReserve(product, salePrice)}
+                  style={{ width:"100%", background:GOLD, color:"#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:14, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor:"pointer" }}>
+                  RESERVE THIS ITEM
+                </button>
+              ) : (
+                <>
+                  <button onClick={() => onReserve(product, salePrice)}
+                    style={{ width:"100%", background:GOLD, color:"#000", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:14, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor:"pointer" }}>
+                    RESERVE IT · ${product.deposit} DEPOSIT
+                  </button>
+                  <button onClick={() => onPayFull(product, salePrice)}
+                    style={{ width:"100%", background:"transparent", color:"var(--text)", fontFamily:"'Oswald',sans-serif", fontSize:13, letterSpacing:"0.08em", padding:"10px 0", border:"1px solid #333", borderRadius:2, cursor:"pointer" }}>
+                    PAY IN FULL · ${salePrice.toLocaleString()}
+                  </button>
+                </>
+              )}
+              <div style={{ fontSize:10, color:"var(--text-dim)", textAlign:"center", fontStyle:"italic" }}>
+                {paymentMode === "email_only" ? "Come in or call to complete payment. Valid ID required." : "FFL paperwork completed in-store. Valid ID required."}
+              </div>
             </div>
           )}
         </div>
@@ -304,7 +315,7 @@ function DealResult({ product, pct, claimed: alreadyClaimed, onReserve, onPayFul
 }
 
 // ── reservation modal ─────────────────────────────────────────────────────
-function Modal({ product, price, type, dealId, onClose, onSuccess }) {
+function Modal({ product, price, type, dealId, onClose, onSuccess, paymentMode }) {
   const [form, setForm] = useState({ name:"", email:"", phone:"" });
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -368,24 +379,28 @@ function Modal({ product, price, type, dealId, onClose, onSuccess }) {
       <div style={{ background:"var(--bg-card)", border:`1px solid ${GOLD}`, borderRadius:3, padding:"2rem", width:"100%", maxWidth:400, position:"relative" }}>
         <button onClick={onClose} style={{ position:"absolute", top:10, right:14, background:"none", border:"none", color:"var(--text-dim)", fontSize:22, cursor:"pointer" }}>×</button>
         {!done ? <>
-          <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:18, color:GOLD, letterSpacing:"0.1em", marginBottom:3 }}>{type==="deposit" ? "RESERVE THIS ITEM" : "PAY IN FULL"}</div>
-          <div style={{ fontStyle:"italic", color:"var(--text-dim)", fontSize:12, marginBottom:18 }}>{product.name} · ${price.toLocaleString()}</div>
+          <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:18, color:GOLD, letterSpacing:"0.1em", marginBottom:3 }}>
+            {paymentMode === "email_only" ? "RESERVE THIS ITEM" : (type==="deposit" ? "RESERVE THIS ITEM" : "PAY IN FULL")}
+          </div>
+          <div style={{ fontStyle:"italic", color:"var(--text-dim)", fontSize:12, marginBottom:18 }}>{product.name}{paymentMode !== "email_only" && ` · $${price.toLocaleString()}`}</div>
           {[["Full Name","name","text"],["Email Address","email","email"],["Phone Number","phone","tel"]].map(([label,key,t]) => (
             <div key={key} style={{ marginBottom:12 }}>
               <label style={{ display:"block", fontSize:10, color:"var(--text-dim)", fontFamily:"'Oswald',sans-serif", letterSpacing:"0.12em", marginBottom:4 }}>{label.toUpperCase()}</label>
               <input type={t} value={form[key]} onChange={e => set(key, e.target.value)} style={{ width:"100%", background:"var(--bg)", border:"1px solid var(--border-mid)", color:"var(--text)", padding:"8px 12px", borderRadius:2, fontFamily:"Georgia,serif", fontSize:13, outline:"none", boxSizing:"border-box" }}/>
             </div>
           ))}
-          <div style={{ padding:"12px 14px", background:"var(--bg)", border:"1px solid var(--border)", borderRadius:2, marginBottom:16 }}>
-            <div style={{ display:"flex", justifyContent:"space-between" }}>
-              <span style={{ fontSize:12, color:"var(--text-dim)", fontFamily:"'Oswald',sans-serif" }}>{type==="deposit" ? "DEPOSIT" : "TOTAL"} DUE NOW</span>
-              <span style={{ fontSize:16, color:GOLD, fontFamily:"'Oswald',sans-serif", fontWeight:700 }}>${(type==="deposit" ? product.deposit : price).toLocaleString()}</span>
+          {paymentMode !== "email_only" && (
+            <div style={{ padding:"12px 14px", background:"var(--bg)", border:"1px solid var(--border)", borderRadius:2, marginBottom:16 }}>
+              <div style={{ display:"flex", justifyContent:"space-between" }}>
+                <span style={{ fontSize:12, color:"var(--text-dim)", fontFamily:"'Oswald',sans-serif" }}>{type==="deposit" ? "DEPOSIT" : "TOTAL"} DUE NOW</span>
+                <span style={{ fontSize:16, color:GOLD, fontFamily:"'Oswald',sans-serif", fontWeight:700 }}>${(type==="deposit" ? product.deposit : price).toLocaleString()}</span>
+              </div>
+              {type==="deposit" && <div style={{ fontSize:10, color:"var(--text-dim)", marginTop:4, fontStyle:"italic" }}>Balance of ${(price - product.deposit).toLocaleString()} due in-store</div>}
             </div>
-            {type==="deposit" && <div style={{ fontSize:10, color:"var(--text-dim)", marginTop:4, fontStyle:"italic" }}>Balance of ${(price - product.deposit).toLocaleString()} due in-store</div>}
-          </div>
+          )}
           {conflictError && <div style={{ padding:"10px 14px", background:"#1a0000", border:"1px solid var(--red-bright)", borderRadius:2, color:"var(--red-bright)", fontSize:12, fontStyle:"italic", marginBottom:12 }}>{conflictError}</div>}
           <button onClick={submit} disabled={!valid || submitting || !!conflictError} style={{ width:"100%", background: valid && !submitting ? GOLD : "#9e9e9e", color: valid && !submitting ? "#000" : "#666", fontFamily:"'Oswald',sans-serif", fontWeight:700, fontSize:15, letterSpacing:"0.1em", padding:"12px 0", border:"none", borderRadius:2, cursor: valid && !submitting ? "pointer":"not-allowed" }}>
-            {submitting ? "SAVING..." : "PROCEED TO PAYMENT →"}
+            {submitting ? "SAVING..." : (paymentMode === "email_only" ? "CONFIRM RESERVATION →" : "PROCEED TO PAYMENT →")}
           </button>
         </> : (
           <div style={{ textAlign:"center", padding:"1rem 0" }}>
@@ -954,6 +969,7 @@ export default function GristmillClient() {
   const [dealClaimedToday, setDealClaimedToday] = useState(false);
   const [modal, setModal] = useState(null);
   const [siteContent, setSiteContent] = useState({});
+  const [paymentMode, setPaymentMode] = useState("email_only");
   const LIMIT = 24;
 
   // Fetch today's deal once on mount
@@ -964,6 +980,9 @@ export default function GristmillClient() {
     });
     fetch('/api/content').then(r => r.json()).then(d => {
       if (!d.error) setSiteContent(d);
+    });
+    fetch('/api/settings').then(r => r.json()).then(d => {
+      if (d.payment_mode) setPaymentMode(d.payment_mode);
     });
     // Check deal claimed status independently
     fetch('/api/availability?ids=').then(r => r.json()).then(a => {
@@ -1086,6 +1105,7 @@ export default function GristmillClient() {
               product={dealProduct}
               pct={todaysDeal.pct}
               claimed={dealClaimedToday}
+              paymentMode={paymentMode}
               onReserve={(p, price) => setModal({ product:p, type:"deposit", price, dealId: todaysDeal?.id })}
               onPayFull={(p, price) => setModal({ product:p, type:"full", price, dealId: todaysDeal?.id })}
             />
@@ -1261,7 +1281,7 @@ export default function GristmillClient() {
         </div>
       </footer>
 
-      {modal && <Modal {...modal} onClose={() => setModal(null)} onSuccess={() => {
+      {modal && <Modal {...modal} paymentMode={paymentMode} onClose={() => setModal(null)} onSuccess={() => {
         if (modal.dealId) setDealClaimedToday(true);
         if (modal.product?.id) setHeldProductIds(ids => [...ids, modal.product.id]);
       }}/>}
