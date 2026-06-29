@@ -8,9 +8,14 @@ export async function POST(req) {
 
     // Get credentials from settings
     const rows = await prisma.setting.findMany({
-      where: { key: { in: ['firstpay_transcenter_id', 'firstpay_gateway_id', 'firstpay_merchant_key', 'firstpay_checkout_url'] } }
+      where: { key: { in: ['firstpay_transcenter_id', 'firstpay_gateway_id', 'firstpay_merchant_key', 'firstpay_checkout_url', 'payment_mode'] } }
     })
     const s = Object.fromEntries(rows.map(r => [r.key, r.value]))
+
+    // Email-only mode — skip payment entirely, just confirm the reservation
+    if (s['payment_mode'] === 'email_only') {
+      return NextResponse.json({ configured: false, emailOnly: true })
+    }
 
     // Option 1: Hosted checkout URL (simplest — just redirect with params)
     if (s['firstpay_checkout_url']) {
