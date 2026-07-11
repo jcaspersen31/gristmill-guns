@@ -5,7 +5,7 @@ import AdminButton from "@/components/admin/AdminButton";
 import InputField from "@/components/admin/InputField";
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState({ firstpay_transcenter_id:"", firstpay_gateway_id:"", firstpay_merchant_id:"", firstpay_checkout_url:"", klaviyo_api_key:"", klaviyo_list_id:"", klaviyo_company_id:"", resend_api_key:"", payment_mode:"email_only", new_password:"", confirm_password:"" });
+  const [settings, setSettings] = useState({ site_mode:"coming_soon", firstpay_transcenter_id:"", firstpay_gateway_id:"", firstpay_merchant_id:"", firstpay_checkout_url:"", klaviyo_api_key:"", klaviyo_list_id:"", klaviyo_company_id:"", resend_api_key:"", payment_mode:"email_only", new_password:"", confirm_password:"" });
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -40,6 +40,20 @@ export default function SettingsPage() {
       {loading ? <div style={{ color:"var(--text-dim)", fontFamily:"'Oswald',sans-serif", letterSpacing:"0.15em" }}>LOADING...</div> : <>
 
         <div style={{ marginBottom:28 }}>
+          <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:13, color:"var(--text-muted)", letterSpacing:"0.12em", marginBottom:16, paddingBottom:8, borderBottom:"1px solid var(--border)" }}>SITE MODE</div>
+          <div style={{ display:"flex", gap:10, marginBottom:28 }}>
+            {[
+              { val:"coming_soon", label:"COMING SOON", hint:"Shows the coming soon page to visitors. Admin still works." },
+              { val:"live",        label:"LIVE",         hint:"Full site is visible — catalog, spinner, reservations." },
+            ].map(({ val, label, hint }) => (
+              <div key={val} onClick={() => set("site_mode", val)}
+                style={{ flex:1, padding:"14px", borderRadius:3, cursor:"pointer", border:`1px solid ${settings.site_mode===val ? GOLD : "var(--border-mid)"}`, background: settings.site_mode===val ? "rgba(201,168,76,0.08)" : "transparent" }}>
+                <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:12, color: settings.site_mode===val ? GOLD : "var(--text-dim)", letterSpacing:"0.1em", marginBottom:6 }}>{label}</div>
+                <div style={{ fontSize:11, color:"var(--text-dim)", fontStyle:"italic", lineHeight:1.5 }}>{hint}</div>
+              </div>
+            ))}
+          </div>
+
           <div style={{ fontFamily:"'Oswald',sans-serif", fontSize:13, color:"var(--text-muted)", letterSpacing:"0.12em", marginBottom:16, paddingBottom:8, borderBottom:"1px solid var(--border)" }}>PAYMENT MODE</div>
           <div style={{ display:"flex", gap:10, marginBottom:20 }}>
             {[

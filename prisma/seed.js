@@ -23,6 +23,7 @@ async function main() {
     { key: 'klaviyo_company_id',          value: '' },
     { key: 'resend_api_key',              value: '' },
     { key: 'payment_mode',                value: 'email_only' },
+    { key: 'site_mode',                   value: 'coming_soon' },
     { key: 'cloudinary_cloud_name',    value: '' },
     { key: 'cloudinary_upload_preset', value: '' },
     { key: 'shop_name',                value: 'Gristmill Guns & Optics' },
