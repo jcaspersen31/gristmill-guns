@@ -1,9 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import dynamic from "next/dynamic";
 import ComingSoon from "./coming-soon/page";
-
-const GristmillClient = dynamic(() => import("./GristmillClient"), { ssr: false });
+import CatalogLoader from "./CatalogLoader";
 
 export default async function RootPage() {
   let siteMode = "coming_soon";
@@ -13,5 +10,5 @@ export default async function RootPage() {
   } catch {}
 
   if (siteMode === "coming_soon") return <ComingSoon />;
-  return <GristmillClient />;
+  return <CatalogLoader />;
 }
