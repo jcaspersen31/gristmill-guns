@@ -4,6 +4,8 @@ import PageHeader from "@/components/admin/PageHeader";
 import AdminButton from "@/components/admin/AdminButton";
 import InputField from "@/components/admin/InputField";
 
+const GOLD = "#c9a84c";
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState({ site_mode:"coming_soon", firstpay_transcenter_id:"", firstpay_gateway_id:"", firstpay_merchant_id:"", firstpay_checkout_url:"", klaviyo_api_key:"", klaviyo_list_id:"", klaviyo_company_id:"", resend_api_key:"", payment_mode:"email_only", new_password:"", confirm_password:"" });
   const [saved, setSaved] = useState(false);
